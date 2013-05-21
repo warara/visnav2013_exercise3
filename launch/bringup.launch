@@ -1,0 +1,12 @@
+<launch>
+	<node name="ar_pose" pkg="ar_pose" type="ar_multi" respawn="false" output="screen">
+		<param name="marker_pattern_list" type="string" value="$(find visnav2013_exercise3)/marker/two_marker"/>
+		<param name="threshold" type="int" value="100"/>
+ 		<remap from="/usb_cam/image_raw" to="/ardrone/bottom/image_raw"/>
+ 		<remap from="/usb_cam/camera_info" to="/ardrone/bottom/camera_info"/>
+	</node>
+	<node name="joystick_driver" pkg="joy" type="joy_node" />
+	<node name="ardrone_joystick" pkg="ardrone_joystick" type="ardrone_teleop" />
+	<node name="marker_ekf" pkg="visnav2013_exercise3" type="marker_ekf" />
+	<node name="rviz" pkg="rviz" type="rviz" args="-d $(find visnav2013_exercise3)/launch/rviz.vcg" />
+</launch>
