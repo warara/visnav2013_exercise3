@@ -1,10 +1,3 @@
-/*
- * marker.cpp
- *
- *  Created on: Apr 18, 2012
- *      Author: Nikolas Engelhard
- */
-
 #include <visnav2013_exercise3/marker.h>
 
 using namespace std;

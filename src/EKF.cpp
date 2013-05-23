@@ -1,9 +1,3 @@
-/*
- * EKF.h
- *
- *  Created on: May 7, 2012
- *      Author: engelhan
- */
 
 #include <visnav2013_exercise3/EKF.h>
 

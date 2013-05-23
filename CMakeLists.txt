@@ -18,9 +18,14 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 find_package(Eigen REQUIRED)
 include_directories(${Eigen_INCLUDE_DIRS})
+# add dynamic reconfigure api
+
+rosbuild_find_ros_package(dynamic_reconfigure)
+include(${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake)
+gencfg()
 
 #uncomment if you have defined messages
-#rosbuild_genmsg()
+rosbuild_genmsg()
 #uncomment if you have defined services
 #rosbuild_gensrv()
 
@@ -32,4 +37,12 @@ include_directories(${Eigen_INCLUDE_DIRS})
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
 
-rosbuild_add_executable(marker_ekf src/main.cpp src/marker.cpp src/EKF.cpp)
+rosbuild_add_executable(marker_ekf 
+  src/main.cpp 
+  src/marker.cpp 
+  src/EKF.cpp
+)
+
+rosbuild_add_executable(ardrone_controller 
+  src/controller.cpp
+)

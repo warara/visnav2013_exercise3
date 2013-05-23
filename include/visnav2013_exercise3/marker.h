@@ -21,7 +21,7 @@ struct drone_marker {
  void publish_markers();
 
  drone_marker(){
-  pub_markers = nh_.advertise<visualization_msgs::MarkerArray>( "poses_array", 0 );
+  pub_markers = nh_.advertise<visualization_msgs::MarkerArray>("visualization_marker_array", 0 );
  }
 
 
@@ -45,7 +45,7 @@ struct EKF_marker {
  void publish_last_n_states(int n = -1);
 
  EKF_marker(){
-   pub_markers = nh_.advertise<visualization_msgs::Marker>( "ekf_marker", 1000);
+   pub_markers = nh_.advertise<visualization_msgs::Marker>("visualization_marker", 1000);
   }
 
  void addFilterState(Eigen::Vector3f mu, Eigen::Matrix3f sigma, float height = 0){
