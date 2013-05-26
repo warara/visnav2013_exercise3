@@ -19,6 +19,7 @@ public:
   PidController()
   {
     c_proportional = c_integral = c_derivative = 0;
+    e_int_incr=0;
     reset();
   }
 
@@ -27,6 +28,7 @@ public:
     // derivative
     float derror = 0;
     // TODO: implement numerical differentiation
+    derror= error/ 0.1;
     
     return getCommand(t, error, derror);
   }
@@ -34,7 +36,9 @@ public:
   float getCommand(const ros::Time& t, float error, float derror)
   {
     // TODO: implement PID control law
-    return 0.0;
+    float u=c_proportional*error+c_derivative*derror+c_integral*(e_int_incr+0.1*error);
+
+    return u;
   }
 
   // resets the internal state
@@ -42,6 +46,7 @@ public:
   {
   }
 private:
+  float e_int_incr;
 };
 
 class ArdroneController
@@ -60,8 +65,13 @@ private:
 
   PidController pid_x, pid_y, pid_yaw;
 
+  ros::Time tnow;
+  ros::Duration t_diff;
+
   bool enabled;
   float goal_x, goal_y, goal_yaw;
+
+
 
 public:
   ArdroneController(ros::NodeHandle& nh) :
@@ -69,6 +79,7 @@ public:
       reconfigure_server(),
       enabled(false)
   {
+
     pub_vel = nh.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
     pub_cmd_marker = nh.advertise<visualization_msgs::Marker>("visualization_marker", 10);
     
@@ -77,6 +88,9 @@ public:
     twist.linear.x = twist.linear.y = twist.linear.z = 0;
     twist.angular.x = twist.angular.y = twist.angular.z = 0;
     setGoalPose(0, 0, 0);
+
+    tnow = ros::Time::now();
+
 
     sub_enabled = nh.subscribe<std_msgs::Bool>("/ardrone/enable_controller", 1, boost::bind(&ArdroneController::onEnableController, this, _1));
     sub_pose = nh.subscribe<visnav2013_exercise3::State>("/ardrone/filtered_pose", 1, boost::bind(&ArdroneController::onFilteredPose, this, _1));
@@ -143,18 +157,31 @@ public:
   // control in xy and yaw
   void calculateContolCommand(const ros::Time& t)
   {
+    ros::Time tnow = ros::Time::now();
     // TODO: implement error computation and calls to pid controllers to get the commands
 
-    // use this yaw to rotate commands from global to local frame
     float yaw = -(state.yaw + M_PI_2);
-    
-    twist.linear.x = 0.0; // = ??
-    twist.linear.y = 0.0; // = ??
 
-    float u_yaw = 0.0; // = ??
+    float u_x=pid_x.getCommand(tnow, goal_x-state.x);
+    float u_y=pid_y.getCommand(tnow, goal_y-state.y);
+    float u_yaw=pid_yaw.getCommand(tnow, goal_yaw-state.yaw);
+
+    //float u_x=pid_x.getCommand(tnow, goal_x-state.x, state.vx);
+    //float u_y=pid_y.getCommand(tnow, goal_y-state.y, state.vy);
+    float u_yaw=pid_yaw.getCommand(tnow, goal_yaw-state.yaw);
+
+
+    // use this yaw to rotate commands from global to local frame
+    
+
+    twist.linear.x = u_x/cos(yaw); // = ??
+    twist.linear.y = u_y/sin(yaw); // = ??
+
+    //float u_yaw = 0.0; // = ??
 
     // normalize angular control command
     twist.angular.z = atan2(sin(u_yaw), cos(u_yaw));
+    ROS_INFO_STREAM("ux: " << u_x << " uy " << twist.linear.y << " uphi " <<twist.angular.z);
   }
 
   void sendCmdMarker(const ros::Time& t)
